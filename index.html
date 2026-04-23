@@ -2,368 +2,606 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>资源导航中心 - 网址发布页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>船长资源发布页（防走丢！）</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========== 暗色主题变量 & 全局样式 ========== */
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --warning-color: #e74c3c;
-            --success-color: #27ae60;
-            --text-light: #ffffff;
-            --visit-hover: #2980b9;
-            --copy-hover: #219653;
+            --bg-dark-void: #0a0c10;
+            --card-bg: rgba(18, 22, 28, 0.94);
+            --card-border: rgba(255, 255, 255, 0.07);
+            --text-primary: #f0f3fa;
+            --text-secondary: #cbd5e6;
+            --text-muted: #a0afc6;
+            --accent-blue: #5dade2;
+            --accent-green: #2ecc71;
+            --warning-tint: #f5b041;
+            --hover-lift: rgba(255, 255, 255, 0.05);
+            --radius-md: 4px;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #f8f9fa;
-            margin: 0;
+            /* 背景图片：用户指定的链接 + 亮度增强 (filter brightness 提高亮度) */
+            background-image: url('https://www.sodanji.cn/wp-content/uploads/背景ass-游戏角色.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #05070a;
+            font-family: 'Segoe UI', 'Roboto', system-ui, 'Helvetica Neue', sans-serif;
             padding: 2rem 1rem;
             min-height: 100vh;
+        }
+
+        /* 全局背景额外处理: 为背景图片增加亮度滤镜 (使指定图片更亮) + 柔和暗色叠层保证文字对比 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            background-image: inherit;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            filter: brightness(1.2) contrast(1.05);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* 轻微半透明叠层，提升文字可读性，但保留背景亮感 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 核心布局：合并后的容器（公告栏+导航栏）宽度800px，居中，统一圆角4px */
+        .unified-dashboard {
+            max-width: 800px;
+            width: 90%;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-inner {
+            padding: 1.8rem 2rem 2rem 2rem;
+        }
+
+        /* 顶部公告+二维码区域 (整合在同一个容器内) */
+        .announcement-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* 左侧公告 (静态不可编辑) */
+        .bulletin-box {
+            flex: 3;
+            min-width: 200px;
+        }
+
+        .badge-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(93, 173, 226, 0.2);
+            backdrop-filter: blur(4px);
+            color: #b8dbff;
+            font-size: 0.7rem;
+            padding: 0.2rem 1rem;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(93, 173, 226, 0.3);
+        }
+
+        /* 静态公告内容，不可编辑，但背景和字体适配暗色 */
+        .static-bulletin {
+            font-size: 1rem;
+            line-height: 1.55;
+            color: var(--text-primary);
+            background: rgba(10, 14, 19, 0.7);
+            padding: 1rem 1.2rem;
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--accent-blue);
+            word-break: break-word;
+            font-weight: 450;
+        }
+
+        /* 右侧二维码 (暗黑风格适配) — 现在展示固定QQ二维码 */
+        .qrcode-module {
+            flex: 1;
+            min-width: 130px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 0.7rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .qrcode-title {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #cce2ff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .qrcode-img {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+            display: block;
+            background: #1e1f24;
+            border-radius: var(--radius-md);
+            padding: 4px;
+            border: 1px solid #2c3e50;
+            transition: transform 0.2s;
+            object-fit: contain;  /* 保持二维码比例，不变形 */
+        }
+
+        .qrcode-img:hover {
+            transform: scale(1.02);
+        }
+
+        .qrcode-tip {
+            font-size: 0.65rem;
+            color: #ffdfaa;
+            margin-top: 0.4rem;
+            font-weight: 500;
+            background: rgba(0,0,0,0.3);
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        /* 精选资源导航区块 (标题居中) */
+        .nav-section {
+            margin-top: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #ffffff 0%, #b8d8ff 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .section-title span {
+            background: none;
+            color: #ffdb8e;
+            font-size: 1.7rem;
+        }
+
+        /* 导航列表卡片 (暗黑风格 + 4px圆角) 所有字体对比度提高 */
+        .link-list {
             display: flex;
             flex-direction: column;
+            gap: 1rem;
         }
 
-        .container {
-            max-width: 600px; /* 主容器最大宽度 1200px */
-            width: 100%;
-            margin: 0 auto;
-            flex: 1;
-        }
-
-        /* 顶部横幅样式 */
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding: 2rem;
-            background: var(--primary-color);
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            color: var(--text-light);
-        }
-
-        .header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .hint {
-            color: rgba(255,255,255,0.9);
-            font-size: 0.95rem;
-        }
-        
-        /* --- 内容区域 Flexbox 布局 --- */
-        .content-layout {
-            display: flex;
-            gap: 2rem; /* 左右间距 */
-            margin-bottom: 2rem;
-        }
-
-        .player-area {
-            flex: 3; /* 播放器区域改为占据 3 份空间，放大 */
-            min-width: 350px; /* 增加最小宽度 */
-            background-color: #fff;
-            padding: 1.5rem;
-            border-radius: 0.8rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .video-player {
-            width: 100%;
-            /* 使用 aspect-ratio 确保视频比例在现代浏览器中显示正确 */
-            /* 假设您的视频是 16:9 比例 */
-            aspect-ratio: 16 / 9; 
-            max-height: 100%;
-            border-radius: 0.6rem;
-            background-color: #000;
-        }
-
-        .navigation-area {
-            flex: 2; /* 导航区域保持 2 份空间 */
-            min-width: 0; 
-        }
-
-        /* --- 导航列表项样式保持不变 --- */
         .link-item {
             display: flex;
             align-items: center;
-            background: white;
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            border-radius: 0.8rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            background: rgba(12, 16, 22, 0.75);
+            backdrop-filter: blur(2px);
+            padding: 1rem 1.4rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.2s ease;
         }
 
         .link-item:hover {
+            background: rgba(25, 32, 42, 0.9);
+            border-color: rgba(93, 173, 226, 0.4);
             transform: translateY(-2px);
         }
 
         .link-info {
-            flex: 1;
-            min-width: 0;
-            margin-right: 1.5rem;
+            flex: 2;
+            min-width: 170px;
         }
 
         .link-title {
-            color: var(--primary-color);
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #e2efff;
             text-decoration: none;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            transition: color 0.2s;
+        }
+
+        .link-title:hover {
+            color: #7ab3e6;
+            text-decoration: underline;
         }
 
         .link-url {
-            color: #7f8c8d;
-            font-size: 0.9em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin: 0.3rem 0;
+            color: #b7cbee;
+            font-size: 0.75rem;
+            margin: 0.2rem 0;
+            word-break: break-all;
         }
 
         .link-warning {
-            color: var(--warning-color);
-            font-size: 0.8em;
-            margin-top: 0.5rem;
-            padding: 0.3rem 0.6rem;
-            background-color: rgba(231, 76, 60, 0.1);
-            border-radius: 4px;
+            background: rgba(245, 176, 65, 0.12);
+            color: #ffdeae;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
             display: inline-block;
-            border: 1px solid rgba(231, 76, 60, 0.2);
+            margin-top: 0.3rem;
+            border: 1px solid rgba(245, 176, 65, 0.25);
         }
 
         .action-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 0.7rem;
             flex-shrink: 0;
         }
 
         .action-btn {
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border: none;
-            border-radius: 0.6rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.7s ease;
-        }
-
-        .action-btn:hover::before {
-            left: 100%;
+            transition: 0.2s;
+            background: rgba(30, 40, 50, 0.95);
+            color: #f0f6ff;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .visit-btn {
-            background: var(--secondary-color);
-            color: var(--text-light);
-            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3);
+            background: #1f6392;
+            color: white;
+            border: none;
         }
 
         .visit-btn:hover {
-            background: var(--visit-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+            background: #2c7db3;
+            transform: translateY(-1px);
         }
 
         .copy-btn {
-            background: var(--success-color);
-            color: var(--text-light);
-            box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+            background: #1e5631;
+            color: white;
         }
 
         .copy-btn:hover {
-            background: var(--copy-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
+            background: #2a7a45;
+            transform: translateY(-1px);
         }
 
+        /* 底部收藏栏 (Ctrl+D 提示) 增强暗黑对比度，所有字体清晰明亮 */
+        .footer-shortcut {
+            margin-top: 1.8rem;
+            text-align: center;
+            padding: 1rem 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            border: 1px solid rgba(255, 215, 120, 0.15);
+        }
+
+        .footer-shortcut span, .footer-shortcut strong {
+            color: #f2e8cf;
+            font-weight: 500;
+        }
+
+        .footer-shortcut kbd {
+            background: #1e2a36;
+            padding: 0.2rem 0.7rem;
+            border-radius: var(--radius-md);
+            font-family: monospace;
+            font-weight: bold;
+            color: #ffdf8c;
+            margin: 0 4px;
+            border: 1px solid #5a7a9a;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #c0d2f0;
+            opacity: 0.85;
+        }
+
+        /* 提示小字增加柔和对比 */
+        .edit-hint, .extra-note {
+            font-size: 0.65rem;
+            color: #b3c7e3;
+        }
+
+        /* toast 提示暗黑 */
         .toast {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 14px;
+            background: #101418e6;
+            backdrop-filter: blur(16px);
+            color: #f0f3fa;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.85rem;
             opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 999;
+            transition: opacity 0.25s ease;
+            z-index: 1000;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #3e5568;
+            font-weight: 500;
         }
 
-        .global-hint {
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 0.9em;
-            margin: 3rem auto 1rem;
-            padding: 1rem;
-            max-width: 600px;
-            border-top: 1px dashed #ddd;
-        }
-
-        /* 响应式调整 */
-        @media (max-width: 992px) {
-            /* 在中等屏幕下，将左右布局改为上下堆叠 */
-            .content-layout {
+        /* 响应式 */
+        @media (max-width: 680px) {
+            .dashboard-inner {
+                padding: 1.2rem 1.2rem 1.5rem;
+            }
+            .announcement-strip {
                 flex-direction: column;
+                gap: 1.2rem;
             }
-            
-            .player-area, .navigation-area {
-                flex: none; /* 取消 flex 比例分配 */
-                width: 100%; /* 占据全部宽度 */
+            .qrcode-module {
+                align-self: center;
+                max-width: 160px;
             }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
             .link-item {
-                flex-wrap: wrap;
-                gap: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.7rem;
             }
-
             .action-buttons {
                 width: 100%;
                 justify-content: flex-end;
             }
-
-            .action-btn {
-                flex: 1;
-                text-align: center;
+            .section-title {
+                font-size: 1.4rem;
             }
+        }
 
-            .link-warning {
-                white-space: normal;
-            }
-
-            .global-hint {
-                margin: 2rem auto 0;
-                border-top: none;
-                padding: 1rem 0;
-            }
+        ::-webkit-scrollbar {
+            width: 6px;
+            background: #0f1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c3e50;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🔗 船长资源导航发布页</h1>
-            <p class="hint">【防走丢】按 Ctrl+D 收藏本页到浏览器收藏夹</p>
-        </header>
 
-            
-            <div class="navigation-area">
-                <h2>🌐 网站导航列表</h2>
-                <div class="link-list">
-                    <div class="link-item">
-                        <div class="link-info">
-                            <a href="https://www.sodanji.cn" class="link-title" target="_blank">SOGAME- 游戏资源站</a>
-                            <div class="link-url">www.sodanji.cn</div>
-                            <div class="link-warning">🎮单机、switch游戏下载！注册送steam入库40000+</div>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="https://www.sodanji.cn/" class="action-btn visit-btn" target="_blank">访问网站</a>
-                            <button class="action-btn copy-btn" onclick="copyUrl('https://www.sodanji.cn/')">复制链接</button>
-                        </div>
-                    </div>
-
-                    <div class="link-item">
-                        <div class="link-info">
-                            <a href="https://cczynav.com/" class="link-title" target="_blank">船长资源- 软件工具</a>
-                            <div class="link-url">www.cczynav.com</div>
-                            <div class="link-warning">⚙️软件工具免费下载！</div>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="https://cczynav.com/" class="action-btn visit-btn" target="_blank">访问网站</a>
-                            <button class="action-btn copy-btn" onclick="copyUrl('https://cczynav.com/')">复制链接</button>
-                        </div>
-                    </div>
-
+<div class="unified-dashboard">
+    <div class="dashboard-inner">
+        <!-- 公告 + 二维码区域 (二维码已替换为指定QQ图片) -->
+        <div class="announcement-strip">
+            <!-- 静态公告区域：不可编辑，无光标修改功能 -->
+            <div class="bulletin-box">
+                <div class="badge-label">
+                    📢 公告
+                </div>
+                <div class="static-bulletin" id="staticBulletin">
+                    🚀 欢迎来到船长资源导航！<br>
+                    🌟 永久发布页：收藏不迷路，每日更新优质工具与游戏。<br>
+                    📌 建议将本页加入书签，获取最新资源动态。<br>
+                    💬 扫码加QQ好友，防走丢+资源互助通道！
+                </div>
+            </div>
+            <!-- 二维码放置位（展示QQ二维码，固定链接） -->
+            <div class="qrcode-module">
+                <div class="qrcode-title">
+                    📱 船长 · QQ直通车
+                </div>
+                <img id="fixedQrcode" class="qrcode-img" alt="船长QQ二维码"
+                     src="https://www.sodanji.cn/wp-content/uploads/qq二维码.jpg"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect width=\'110\' height=\'110\' fill=\'%231a1c22\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffaa66\' font-size=\'10\'%3E加QQ防走丢%3C/text%3E%3C/svg%3E'; this.alt='加载备用二维码'">
+                <div class="qrcode-tip">
+                    扫一扫添加船长QQ | 永久通道
                 </div>
             </div>
         </div>
 
-        <div class="global-hint">
-            ✨ 提示：如果无法直接访问，请复制链接到浏览器地址栏打开
+        <!-- 精选资源导航区域 (标题居中 + 修复好item结构) -->
+        <div class="nav-section">
+            <div class="section-title">
+                <span>🌊</span> 资源网站导航 <span>⚡</span>
+            </div>
+            <div class="link-list">
+                <!-- 站点1：船长资源库（500T） -->
+                <div class="link-item">
+                    <div class="link-info">
+                        <a href="https://cczynav.com/list" class="link-title" target="_blank" rel="noopener noreferrer">站点1：船长资源库</a>
+                        <div class="link-url">https://cczynav.com/list</div>
+                        <div class="link-warning">⚙️ 点击下载500T资源！！</div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="https://cczynav.com/list" class="action-btn visit-btn" target="_blank" rel="noopener noreferrer">访问网站</a>
+                        <button class="action-btn copy-btn" onclick="copyUrl('https://cczynav.com/')">复制链接</button>
+                    </div>
+                </div>
+                <!-- 站点2：SOGAME 游戏资源站 -->
+                <div class="link-item">
+                    <div class="link-info">
+                        <a href="https://www.sodanji.cn" class="link-title" target="_blank" rel="noopener noreferrer">站点2：SOGAME - 游戏资源站</a>
+                        <div class="link-url">www.sodanji.cn</div>
+                        <div class="link-warning">🎮 单机、Switch游戏下载！注册送Steam入库40000+</div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="https://www.sodanji.cn/" class="action-btn visit-btn" target="_blank" rel="noopener noreferrer">访问网站</a>
+                        <button class="action-btn copy-btn" onclick="copyUrl('https://www.sodanji.cn/')">复制链接</button>
+                    </div>
+                </div>
+                <!-- 站点3：船长软件工具库 (原站点2改为站点3) -->
+                <div class="link-item">
+                    <div class="link-info">
+                        <a href="https://cczynav.com/" class="link-title" target="_blank" rel="noopener noreferrer">站点3：船长软件工具库</a>
+                        <div class="link-url">www.cczynav.com</div>
+                        <div class="link-warning">⚙️ 软件工具免费下载，办公效率利器！</div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="https://cczynav.com/" class="action-btn visit-btn" target="_blank" rel="noopener noreferrer">访问网站</a>
+                        <button class="action-btn copy-btn" onclick="copyUrl('https://cczynav.com/')">复制链接</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1.2rem; text-align: right; font-size: 0.7rem; color: #b9cdea; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem;">
+                ✨ 更多实用资源持续更新，建议收藏本页 | 加QQ获取更新提醒
+            </div>
         </div>
 
+        <!-- 底部快捷收藏栏 (Ctrl+D) 字体完全适配暗色系，高亮清晰 -->
+        <div class="footer-shortcut">
+            <span>📌 永久防走丢</span>
+            <strong>按 <kbd>Ctrl</kbd> + <kbd>D</kbd></strong>
+            <span>将本页添加到浏览器收藏夹</span>
+            <span>🔖 一键保存发布页</span>
+        </div>
+        <div class="footer-note">
+            💡 提示：若部分网站访问异常，请复制链接至浏览器地址栏打开。<br>
+            📲 右侧二维码为船长QQ联系方式 → 扫码可添加好友，获取资源帮助/防走丢通知。
+        </div>
+    </div>
+</div>
 
-    <div class="toast" id="toast"></div>
+<div class="toast" id="toastMessage"></div>
 
-    <script>
-        // 复制链接功能保持不变
-        function copyUrl(url) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(url)
-                    .then(() => {
-                        showToast('✅ 链接已复制到剪贴板');
-                    })
-                    .catch(err => {
-                        console.error('现代API复制失败:', err);
-                        fallbackCopy(url);
-                    });
+<script>
+    // ========== 复制链接功能 (与原保持一致) ==========
+    function copyUrl(url) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url)
+                .then(() => showToast('✅ 链接已复制到剪贴板'))
+                .catch(() => fallbackCopy(url));
+        } else {
+            fallbackCopy(url);
+        }
+    }
+
+    function fallbackCopy(url) {
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            const success = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if (success) {
+                showToast('✅ 链接已复制');
             } else {
-                fallbackCopy(url);
+                showToast('❌ 请手动复制链接');
             }
+        } catch (err) {
+            console.error('复制失败:', err);
+            showToast('❌ 复制失败，请手动选择复制');
         }
+    }
 
-        function fallbackCopy(url) {
-            try {
-                const textarea = document.createElement('textarea');
-                textarea.value = url;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = 0;
-                document.body.appendChild(textarea);
-                textarea.select();
-                
-                const result = document.execCommand('copy');
-                document.body.removeChild(textarea);
-                
-                if (result) {
-                    showToast('✅ 链接已复制');
-                } else {
-                    showToast('❌ 请手动复制链接');
+    function showToast(message) {
+        const toast = document.getElementById('toastMessage');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, 2200);
+    }
+
+    // ========== 公告完全静态，无二维码动态生成逻辑 ==========
+    // 移除原有动态二维码生成，直接展示用户指定的 QQ 二维码图片
+    // 无需额外操作，保证图片链接固定
+    document.addEventListener('DOMContentLoaded', () => {
+        // 确保图片如果加载错误，已经内置了 onerror 备用
+        // 并且可以添加一个轻量的图片重试检测（如有网络问题不影响体验）
+        const qrImg = document.getElementById('fixedQrcode');
+        if (qrImg && qrImg.complete) {
+            const naturalSize = qrImg.naturalWidth;
+            if (naturalSize === 0 && !qrImg.src.includes('data:image')) {
+                // 完全加载失败触发一下fallback（冗余安全）
+                if (!qrImg.src.includes('data:image/svg')) {
+                    qrImg.onerror && qrImg.onerror(new Event('error'));
                 }
-            } catch (err) {
-                console.error('旧版复制方法失败:', err);
-                showToast('❌ 复制失败，请手动选择复制');
             }
         }
+        // 增加控制台友好提示（无功能影响）
+        console.log('船长发布页已启动 · QQ二维码已固定为指定图片');
+    });
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.opacity = '1';
+    // Ctrl+D 友好提示，帮助加收藏
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) {
             setTimeout(() => {
-                toast.style.opacity = '0';
-            }, 2000);
+                showToast('🌟 按 Ctrl+D 已将本页加入收藏夹，随时访问资源 + 扫码加QQ防走丢');
+            }, 10);
         }
-    </script>
+    });
+
+    // 移动端辅助提示: 添加书签引导（不改变主要设计，适配移动端更友好）
+    function addMobileFavHint() {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            const footer = document.querySelector('.footer-shortcut');
+            if (footer && !footer.querySelector('.mobile-hint-inline')) {
+                const mobileSpan = document.createElement('div');
+                mobileSpan.className = 'mobile-hint-inline';
+                mobileSpan.style.fontSize = '0.7rem';
+                mobileSpan.style.marginTop = '6px';
+                mobileSpan.style.opacity = '0.9';
+                mobileSpan.style.color = '#cbdbe6';
+                mobileSpan.innerHTML = '📱 手机用户：点击浏览器菜单 ⭐ 添加书签，保存二维码联系船长';
+                footer.appendChild(mobileSpan);
+            }
+        }
+    }
+    window.addEventListener('load', addMobileFavHint);
+</script>
 </body>
 </html>
