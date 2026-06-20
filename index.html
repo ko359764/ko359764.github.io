@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>船长资源发布页（防走丢！）</title>
     <style>
+        /* ========== 原有全局样式（完整保留） ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* ========== 暗色主题变量 & 全局样式 ========== */
         :root {
             --bg-dark-void: #0a0c10;
             --card-bg: rgba(18, 22, 28, 0.94);
@@ -27,7 +27,6 @@
         }
 
         body {
-            /* 背景图片：用户指定的链接 + 亮度增强 (filter brightness 提高亮度) */
             background-image: url('https://www.sodanji.cn/wp-content/uploads/背景ass-游戏角色.jpg');
             background-size: cover;
             background-position: center center;
@@ -39,7 +38,6 @@
             min-height: 100vh;
         }
 
-        /* 全局背景额外处理: 为背景图片增加亮度滤镜 (使指定图片更亮) + 柔和暗色叠层保证文字对比 */
         body::before {
             content: '';
             position: fixed;
@@ -57,7 +55,6 @@
             pointer-events: none;
         }
 
-        /* 轻微半透明叠层，提升文字可读性，但保留背景亮感 */
         body::after {
             content: '';
             position: fixed;
@@ -70,7 +67,6 @@
             pointer-events: none;
         }
 
-        /* 核心布局：合并后的容器（公告栏+导航栏）宽度800px，居中，统一圆角4px */
         .unified-dashboard {
             max-width: 800px;
             width: 90%;
@@ -88,7 +84,6 @@
             padding: 1.8rem 2rem 2rem 2rem;
         }
 
-        /* 顶部公告+二维码区域 (整合在同一个容器内) */
         .announcement-strip {
             display: flex;
             flex-wrap: wrap;
@@ -98,7 +93,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* 左侧公告 (静态不可编辑) */
         .bulletin-box {
             flex: 3;
             min-width: 200px;
@@ -119,7 +113,6 @@
             border: 1px solid rgba(93, 173, 226, 0.3);
         }
 
-        /* 静态公告内容，不可编辑，但背景和字体适配暗色 */
         .static-bulletin {
             font-size: 1rem;
             line-height: 1.55;
@@ -132,7 +125,6 @@
             font-weight: 450;
         }
 
-        /* 右侧二维码 (暗黑风格适配) — 现在展示固定QQ二维码 */
         .qrcode-module {
             flex: 1;
             min-width: 130px;
@@ -164,7 +156,7 @@
             padding: 4px;
             border: 1px solid #2c3e50;
             transition: transform 0.2s;
-            object-fit: contain;  /* 保持二维码比例，不变形 */
+            object-fit: contain;
         }
 
         .qrcode-img:hover {
@@ -176,13 +168,12 @@
             color: #ffdfaa;
             margin-top: 0.4rem;
             font-weight: 500;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             display: inline-block;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
         }
 
-        /* 精选资源导航区块 (标题居中) */
         .nav-section {
             margin-top: 0.5rem;
         }
@@ -209,7 +200,6 @@
             font-size: 1.7rem;
         }
 
-        /* 导航列表卡片 (暗黑风格 + 4px圆角) 所有字体对比度提高 */
         .link-list {
             display: flex;
             flex-direction: column;
@@ -312,7 +302,126 @@
             transform: translateY(-1px);
         }
 
-        /* 底部收藏栏 (Ctrl+D 提示) 增强暗黑对比度，所有字体清晰明亮 */
+        /* ========== 新增：下载APP 按钮样式 ========== */
+        .download-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+        }
+
+        .download-btn:hover {
+            background: #a569bd;
+            transform: translateY(-1px);
+        }
+
+        /* ========== 新增：模态框（二维码弹窗）样式 ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.94);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+            padding: 2rem 2rem 1.8rem;
+            max-width: 380px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #a0afc6;
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0 4px;
+        }
+
+        .modal-close:hover {
+            color: #f0f3fa;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f0f3fa;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-sub {
+            font-size: 0.8rem;
+            color: #b7cbee;
+            margin-bottom: 1.2rem;
+        }
+
+        .modal-qr-wrapper {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: inline-block;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-qr-wrapper img {
+            display: block;
+            width: 210px;
+            height: 210px;
+            object-fit: contain;
+        }
+
+        .modal-qr-hint {
+            font-size: 0.75rem;
+            color: #cce2ff;
+            background: rgba(93, 173, 226, 0.12);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid rgba(93, 173, 226, 0.2);
+        }
+
+        .modal-footer-tip {
+            margin-top: 1rem;
+            font-size: 0.65rem;
+            color: #a0afc6;
+        }
+
+        /* ========== 原有底部样式 ========== */
         .footer-shortcut {
             margin-top: 1.8rem;
             text-align: center;
@@ -329,7 +438,8 @@
             border: 1px solid rgba(255, 215, 120, 0.15);
         }
 
-        .footer-shortcut span, .footer-shortcut strong {
+        .footer-shortcut span,
+        .footer-shortcut strong {
             color: #f2e8cf;
             font-weight: 500;
         }
@@ -353,13 +463,12 @@
             opacity: 0.85;
         }
 
-        /* 提示小字增加柔和对比 */
-        .edit-hint, .extra-note {
+        .edit-hint,
+        .extra-note {
             font-size: 0.65rem;
             color: #b3c7e3;
         }
 
-        /* toast 提示暗黑 */
         .toast {
             position: fixed;
             top: 20px;
@@ -373,13 +482,13 @@
             font-size: 0.85rem;
             opacity: 0;
             transition: opacity 0.25s ease;
-            z-index: 1000;
+            z-index: 10000;
             pointer-events: none;
             border: 1px solid #3e5568;
             font-weight: 500;
         }
 
-        /* 响应式 */
+        /* ========== 响应式 ========== */
         @media (max-width: 680px) {
             .dashboard-inner {
                 padding: 1.2rem 1.2rem 1.5rem;
@@ -404,6 +513,13 @@
             .section-title {
                 font-size: 1.4rem;
             }
+            .modal-box {
+                padding: 1.5rem 1.2rem 1.2rem;
+            }
+            .modal-qr-wrapper img {
+                width: 160px;
+                height: 160px;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -418,42 +534,40 @@
 </head>
 <body>
 
-<div class="unified-dashboard">
-    <div class="dashboard-inner">
-        <!-- 公告 + 二维码区域 (二维码已替换为指定QQ图片) -->
-        <div class="announcement-strip">
-            <!-- 静态公告区域：不可编辑，无光标修改功能 -->
-            <div class="bulletin-box">
-                <div class="badge-label">
-                    📢 公告
-                </div>
-                <div class="static-bulletin" id="staticBulletin">
-                    🚀 欢迎来到船长资源导航！<br>
-                    🌟 永久发布页：收藏不迷路，每日更新优质工具与游戏。<br>
-                    📌 建议将本页加入书签，获取最新资源动态。<br>
-                    💬 扫码加QQ好友，防走丢+资源互助通道！
-                </div>
-            </div>
-            <!-- 二维码放置位（展示QQ二维码，固定链接） -->
-            <div class="qrcode-module">
-                <div class="qrcode-title">
-                    📱 船长 · QQ直通车
-                </div>
-                <img id="fixedQrcode" class="qrcode-img" alt="船长QQ二维码"
-                     src="https://www.sodanji.cn/wp-content/uploads/qq二维码.jpg"
-                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect width=\'110\' height=\'110\' fill=\'%231a1c22\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffaa66\' font-size=\'10\'%3E加QQ防走丢%3C/text%3E%3C/svg%3E'; this.alt='加载备用二维码'">
-                <div class="qrcode-tip">
-                    扫一扫添加船长QQ | 永久通道
-                </div>
-            </div>
-        </div>
+    <!-- ====== Toast 提示 ====== -->
+    <div class="toast" id="toastMessage"></div>
 
-        <!-- 精选资源导航区域 (标题居中 + 修复好item结构) -->
-        <div class="nav-section">
-            <div class="section-title">
-                <span>🌊</span> 资源网站导航 <span>⚡</span>
+    <!-- ====== 主容器 ====== -->
+    <div class="unified-dashboard">
+        <div class="dashboard-inner">
+
+            <!-- 公告 + QQ二维码 -->
+            <div class="announcement-strip">
+                <div class="bulletin-box">
+                    <div class="badge-label">📢 公告</div>
+                    <div class="static-bulletin" id="staticBulletin">
+                        🚀 欢迎来到船长资源导航！<br>
+                        🌟 永久发布页：收藏不迷路，每日更新优质工具与游戏。<br>
+                        📌 建议将本页加入书签，获取最新资源动态。<br>
+                        💬 扫码加QQ好友，防走丢+资源互助通道！
+                    </div>
+                </div>
+                <div class="qrcode-module">
+                    <div class="qrcode-title">📱 船长 · QQ直通车</div>
+                    <img id="fixedQrcode" class="qrcode-img" alt="船长QQ二维码"
+                    src="https://www.sodanji.cn/wp-content/uploads/qq二维码.jpg"
+                    onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect width=\'110\' height=\'110\' fill=\'%231a1c22\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffaa66\' font-size=\'10\'%3E加QQ防走丢%3C/text%3E%3C/svg%3E'; this.alt='加载备用二维码'">
+                    <div class="qrcode-tip">扫一扫添加船长QQ | 永久通道</div>
+                </div>
             </div>
-                <!-- 站点1：全国摸鱼吃瓜共享excel -->
+
+            <!-- 精选资源导航 -->
+            <div class="nav-section">
+                <div class="section-title">
+                    <span>🌊</span> 资源网站导航 <span>⚡</span>
+                </div>
+
+                <!-- ====== 站点1：已修改 ====== -->
                 <div class="link-item">
                     <div class="link-info">
                         <a href="https://www.kdocs.cn/l/cagfkH1FXcZl" class="link-title" target="_blank" rel="noopener noreferrer">站点1：全国摸鱼吃瓜共享excel</a>
@@ -462,10 +576,12 @@
                     </div>
                     <div class="action-buttons">
                         <a href="https://www.kdocs.cn/l/cagfkH1FXcZl" class="action-btn visit-btn" target="_blank" rel="noopener noreferrer">访问网站</a>
-                        <button class="action-btn copy-btn" onclick="copyUrl('https://www.kdocs.cn/l/cagfkH1FXcZl')">复制链接</button>
+                        <!-- 原"复制链接" → 改为"下载APP" -->
+                        <button class="action-btn download-btn" id="downloadAppBtn">📲 下载APP</button>
                     </div>
                 </div>
-            <!-- 站点2：SOGAME 游戏资源站 -->
+
+                <!-- 站点2：SOGAME -->
                 <div class="link-item">
                     <div class="link-info">
                         <a href="https://www.sodanji.cn" class="link-title" target="_blank" rel="noopener noreferrer">站点2：SOGAME - 游戏资源站</a>
@@ -477,7 +593,8 @@
                         <button class="action-btn copy-btn" onclick="copyUrl('https://www.sodanji.cn/')">复制链接</button>
                     </div>
                 </div>
-                <!-- 站点3：船长软件工具库 (原站点2改为站点3) -->
+
+                <!-- 站点3：船长软件工具库 -->
                 <div class="link-item">
                     <div class="link-info">
                         <a href="https://cczynav.com/" class="link-title" target="_blank" rel="noopener noreferrer">站点3：船长软件工具库</a>
@@ -490,12 +607,13 @@
                     </div>
                 </div>
             </div>
+
             <div style="margin-top: 1.2rem; text-align: right; font-size: 0.7rem; color: #b9cdea; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem;">
                 ✨ 更多实用资源持续更新，建议收藏本页 | 加QQ获取更新提醒
             </div>
         </div>
 
-        <!-- 底部快捷收藏栏 (Ctrl+D) 字体完全适配暗色系，高亮清晰 -->
+        <!-- 底部快捷收藏 -->
         <div class="footer-shortcut">
             <span>📌 永久防走丢</span>
             <strong>按 <kbd>Ctrl</kbd> + <kbd>D</kbd></strong>
@@ -507,100 +625,206 @@
             📲 右侧二维码为船长QQ联系方式 → 扫码可添加好友，获取资源帮助/防走丢通知。
         </div>
     </div>
-</div>
 
-<div class="toast" id="toastMessage"></div>
+    <!-- ====== 模态框（二维码弹窗） ====== -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-box">
+            <button class="modal-close" id="modalCloseBtn" aria-label="关闭">✕</button>
+            <div class="modal-title">📲 扫码下载 APP</div>
+            <div class="modal-sub">使用手机扫描下方二维码即可下载</div>
+            <div class="modal-qr-wrapper">
+                <img id="modalQrImage" src="" alt="下载APP二维码">
+            </div>
+            <div class="modal-qr-hint">📱 长按或截图保存 · 扫码下载</div>
+            <div class="modal-footer-tip">提示：如二维码无法显示，请检查网络后重试</div>
+        </div>
+    </div>
 
-<script>
-    // ========== 复制链接功能 (与原保持一致) ==========
-    function copyUrl(url) {
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(url)
-                .then(() => showToast('✅ 链接已复制到剪贴板'))
-                .catch(() => fallbackCopy(url));
-        } else {
-            fallbackCopy(url);
+    <!-- ============================================================ -->
+    <!-- ====== JavaScript ====== -->
+    <script>
+        // ================================================================
+        //  ★★★ 用户自定义配置 ★★★
+        //  修改下面两个变量即可自定义二维码内容和手机端跳转链接
+        // ================================================================
+
+        // 1. 二维码内容（扫码后跳转的链接）—— 用户自定义
+        //    例如：'https://www.example.com/app-download' 或 'https://pan.baidu.com/s/xxxx'
+        const QR_CODE_DATA = 'https://www.sodanji.cn/'; // ← 在这里修改为你想要的链接
+
+        // 2. 手机端点击"下载APP"后直接跳转的网盘链接 —— 用户自定义
+        //    例如：'https://pan.baidu.com/s/1abc123?pwd=xxxx'
+        const MOBILE_DOWNLOAD_URL = 'https://pan.baidu.com/s/1abc123?pwd=xxxx'; // ← 在这里修改为你的网盘链接
+
+        // 3. （可选）如果你想直接使用自己的二维码图片，而不是用 API 生成，
+        //    请取消下面注释并填写图片 URL，同时把 QR_CODE_DATA 留空或注释掉。
+        // const QR_CODE_IMAGE_URL = 'https://example.com/my-qrcode.png';
+
+        // ================================================================
+        //  以下代码为功能实现，无需修改
+        // ================================================================
+
+        // 设备检测
+        function isMobileDevice() {
+            return /iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile|WPDesktop|Windows Phone|webOS|Mobile/i.test(
+                navigator.userAgent);
         }
-    }
 
-    function fallbackCopy(url) {
-        try {
-            const textarea = document.createElement('textarea');
-            textarea.value = url;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            const success = document.execCommand('copy');
-            document.body.removeChild(textarea);
-            if (success) {
-                showToast('✅ 链接已复制');
-            } else {
-                showToast('❌ 请手动复制链接');
+        // 获取二维码图片地址
+        function getQrImageUrl() {
+            // 如果用户配置了 QR_CODE_IMAGE_URL，优先使用
+            if (typeof QR_CODE_IMAGE_URL !== 'undefined' && QR_CODE_IMAGE_URL && QR_CODE_IMAGE_URL.trim() !== '') {
+                return QR_CODE_IMAGE_URL.trim();
             }
-        } catch (err) {
-            console.error('复制失败:', err);
-            showToast('❌ 复制失败，请手动选择复制');
+            // 否则使用 API 根据 QR_CODE_DATA 生成
+            const data = QR_CODE_DATA && QR_CODE_DATA.trim() !== '' ? QR_CODE_DATA.trim() : 'https://www.sodanji.cn/';
+            // 使用 qrserver.com API，生成 250x250 的二维码，暗色风格适配
+            return 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(data) +
+                '&bgcolor=1a1c22&color=5dade2&margin=10';
         }
-    }
 
-    function showToast(message) {
-        const toast = document.getElementById('toastMessage');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.style.opacity = '1';
-        setTimeout(() => {
-            toast.style.opacity = '0';
-        }, 2200);
-    }
+        // 显示 toast 提示（复用原有函数）
+        function showToast(message) {
+            const toast = document.getElementById('toastMessage');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2500);
+        }
 
-    // ========== 公告完全静态，无二维码动态生成逻辑 ==========
-    // 移除原有动态二维码生成，直接展示用户指定的 QQ 二维码图片
-    // 无需额外操作，保证图片链接固定
-    document.addEventListener('DOMContentLoaded', () => {
-        // 确保图片如果加载错误，已经内置了 onerror 备用
-        // 并且可以添加一个轻量的图片重试检测（如有网络问题不影响体验）
-        const qrImg = document.getElementById('fixedQrcode');
-        if (qrImg && qrImg.complete) {
-            const naturalSize = qrImg.naturalWidth;
-            if (naturalSize === 0 && !qrImg.src.includes('data:image')) {
-                // 完全加载失败触发一下fallback（冗余安全）
-                if (!qrImg.src.includes('data:image/svg')) {
-                    qrImg.onerror && qrImg.onerror(new Event('error'));
+        // 复制链接（保留原有功能，供其他站点使用）
+        function copyUrl(url) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url)
+                    .then(() => showToast('✅ 链接已复制到剪贴板'))
+                    .catch(() => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
+            }
+        }
+
+        function fallbackCopy(url) {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (success) {
+                    showToast('✅ 链接已复制');
+                } else {
+                    showToast('❌ 请手动复制链接');
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                showToast('❌ 复制失败，请手动选择复制');
+            }
+        }
+
+        // ====== 模态框控制 ======
+        const modal = document.getElementById('qrModal');
+        const modalImg = document.getElementById('modalQrImage');
+        const closeBtn = document.getElementById('modalCloseBtn');
+
+        function openModal() {
+            // 设置二维码图片
+            const imgUrl = getQrImageUrl();
+            modalImg.src = imgUrl;
+            modalImg.alt = '下载APP二维码';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 点击关闭按钮
+        closeBtn.addEventListener('click', closeModal);
+
+        // 点击遮罩关闭
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // ESC 键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // ====== 下载APP 按钮点击处理 ======
+        document.getElementById('downloadAppBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // 检测是否为移动设备
+            if (isMobileDevice()) {
+                // 手机端：直接跳转到用户设置的网盘链接
+                const url = MOBILE_DOWNLOAD_URL && MOBILE_DOWNLOAD_URL.trim() !== '' ?
+                    MOBILE_DOWNLOAD_URL.trim() :
+                    'https://www.sodanji.cn/';
+                window.location.href = url;
+            } else {
+                // PC端：弹出二维码模态框
+                openModal();
+            }
+        });
+
+        // ====== 页面加载完成后的额外处理 ======
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保 QQ 二维码图片加载失败时有备用
+            const qrImg = document.getElementById('fixedQrcode');
+            if (qrImg && qrImg.complete) {
+                if (qrImg.naturalWidth === 0 && !qrImg.src.includes('data:image')) {
+                    qrImg.src =
+                        'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect width=\'110\' height=\'110\' fill=\'%231a1c22\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffaa66\' font-size=\'10\'%3E加QQ防走丢%3C/text%3E%3C/svg%3E';
+                }
+            }
+
+            console.log('✅ 船长发布页已启动');
+            console.log('📲 下载APP 配置:');
+            console.log('   QR_CODE_DATA:', QR_CODE_DATA);
+            console.log('   MOBILE_DOWNLOAD_URL:', MOBILE_DOWNLOAD_URL);
+            console.log('   isMobile:', isMobileDevice());
+        });
+
+        // ====== Ctrl+D 收藏提示（增强） ======
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) {
+                setTimeout(() => {
+                    showToast('🌟 按 Ctrl+D 已将本页加入收藏夹，随时访问资源 + 扫码加QQ防走丢');
+                }, 10);
+            }
+        });
+
+        // ====== 移动端增加书签引导 ======
+        function addMobileFavHint() {
+            const isMobile = isMobileDevice();
+            if (isMobile) {
+                const footer = document.querySelector('.footer-shortcut');
+                if (footer && !footer.querySelector('.mobile-hint-inline')) {
+                    const mobileSpan = document.createElement('div');
+                    mobileSpan.className = 'mobile-hint-inline';
+                    mobileSpan.style.fontSize = '0.7rem';
+                    mobileSpan.style.marginTop = '6px';
+                    mobileSpan.style.opacity = '0.9';
+                    mobileSpan.style.color = '#cbdbe6';
+                    mobileSpan.innerHTML = '📱 手机用户：点击浏览器菜单 ⭐ 添加书签，保存二维码联系船长';
+                    footer.appendChild(mobileSpan);
                 }
             }
         }
-        // 增加控制台友好提示（无功能影响）
-        console.log('船长发布页已启动 · QQ二维码已固定为指定图片');
-    });
-
-    // Ctrl+D 友好提示，帮助加收藏
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) {
-            setTimeout(() => {
-                showToast('🌟 按 Ctrl+D 已将本页加入收藏夹，随时访问资源 + 扫码加QQ防走丢');
-            }, 10);
-        }
-    });
-
-    // 移动端辅助提示: 添加书签引导（不改变主要设计，适配移动端更友好）
-    function addMobileFavHint() {
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            const footer = document.querySelector('.footer-shortcut');
-            if (footer && !footer.querySelector('.mobile-hint-inline')) {
-                const mobileSpan = document.createElement('div');
-                mobileSpan.className = 'mobile-hint-inline';
-                mobileSpan.style.fontSize = '0.7rem';
-                mobileSpan.style.marginTop = '6px';
-                mobileSpan.style.opacity = '0.9';
-                mobileSpan.style.color = '#cbdbe6';
-                mobileSpan.innerHTML = '📱 手机用户：点击浏览器菜单 ⭐ 添加书签，保存二维码联系船长';
-                footer.appendChild(mobileSpan);
-            }
-        }
-    }
-    window.addEventListener('load', addMobileFavHint);
-</script>
+        window.addEventListener('load', addMobileFavHint);
+    </script>
 </body>
 </html>
